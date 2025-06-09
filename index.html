@@ -468,17 +468,49 @@
                 }
             }
 
-            // Get preferred theme from localStorage or system preference
+                        // --- Theme Toggle Logic ---
+            // ... (button and icon definitions remain the same) ...
+
+            // Determine initial theme:
+            // 1. Check localStorage for a user's explicit choice.
+            // 2. If no choice in localStorage, default to 'light' mode.
+            //    (We are no longer defaulting to system preference for the initial load if no explicit choice)
             let currentTheme = localStorage.getItem('theme');
-            if (!currentTheme) { // If no explicit choice, check system preference
-                currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+            if (currentTheme === 'dark') {
+                // User explicitly chose dark mode previously
+                applyTheme('dark');
+            } else {
+                // Default to light mode if:
+                // - localStorage has 'light'
+                // - localStorage has no theme set (null)
+                // - localStorage has an invalid value
+                applyTheme('light');
+                // If localStorage was null or invalid, set it to 'light' for consistency
+                if (currentTheme !== 'light') {
+                    localStorage.setItem('theme', 'light'); 
+                }
             }
-            // Ensure if 'currentTheme' is somehow not set, it defaults to 'light'
-            if (currentTheme !== 'dark' && currentTheme !== 'light') {
-                currentTheme = 'light';
-            }
-            
-            applyTheme(currentTheme); // Apply initial theme
+
+            themeToggleButton.addEventListener('click', () => {
+                let newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            // Optional: Still listen to system preference changes if you want the
+            // theme to update IF the user hasn't made an explicit choice yet.
+            // However, since we now default to light and save that choice, this
+            // listener might have less impact unless localStorage is cleared.
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                const storedTheme = localStorage.getItem('theme');
+                // If the user has an explicit choice, respect it.
+                // If not, then allow system preference to influence.
+                // But given the logic above, 'theme' in localStorage will almost always be set.
+                if (!storedTheme) { 
+                     applyTheme(event.matches ? 'dark' : 'light');
+                }
+            });
 
             themeToggleButton.addEventListener('click', () => {
                 let newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
