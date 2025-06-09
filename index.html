@@ -468,29 +468,17 @@
                 }
             }
 
-                        // --- Theme Toggle Logic ---
-            // ... (button and icon definitions remain the same) ...
-
-            // Determine initial theme:
-            // 1. Check localStorage for a user's explicit choice.
-            // 2. If no choice in localStorage, default to 'light' mode.
-            //    (We are no longer defaulting to system preference for the initial load if no explicit choice)
+            // Get preferred theme from localStorage or system preference
             let currentTheme = localStorage.getItem('theme');
-
-            if (currentTheme === 'dark') {
-                // User explicitly chose dark mode previously
-                applyTheme('dark');
-            } else {
-                // Default to light mode if:
-                // - localStorage has 'light'
-                // - localStorage has no theme set (null)
-                // - localStorage has an invalid value
-                applyTheme('light');
-                // If localStorage was null or invalid, set it to 'light' for consistency
-                if (currentTheme !== 'light') {
-                    localStorage.setItem('theme', 'light'); 
-                }
+            if (!currentTheme) { // If no explicit choice, check system preference
+                currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
+            // Ensure if 'currentTheme' is somehow not set, it defaults to 'light'
+            if (currentTheme !== 'dark' && currentTheme !== 'light') {
+                currentTheme = 'light';
+            }
+            
+            applyTheme(currentTheme); // Apply initial theme
 
             themeToggleButton.addEventListener('click', () => {
                 let newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
